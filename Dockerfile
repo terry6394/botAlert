@@ -4,18 +4,24 @@ ARG app_env
 ENV APP_ENV $app_env
 ENV APP_PATH /go/src/github.com/terry6394/botAlert
 
-COPY . ${APP_PATH}
+COPY . ${APP_PATH}/
 WORKDIR ${APP_PATH}/app
 
 RUN go get ./
 RUN go build
 
-CMD if [ "${APP_ENV}" == "production" ]; \
+# Get fresh when non-production build.
+RUN if [ "${app_env}" != production ] ; \
       then \
-      app; \
+      go get github.com/pilu/fresh ; \
+    fi
+
+
+CMD if [ "${APP_ENV}" != production ] ; \
+      then \
+        go get github.com/pilu/fresh && fresh; \
       else \
-      go get github.com/pilu/fresh && \
-      fresh; \
-      fi
+        ./app; \
+    fi
 
 EXPOSE 45678
